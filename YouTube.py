@@ -6,7 +6,7 @@ import pymysql
 import streamlit as st
 
 # Google API Connection
-apikey = "AIzaSyCCIl1_Dlut-u3FxeMmVfVKNt9rvBFOKys"
+apikey = "AIza****Il1_****-u3Fx****VKNt****FOKys"
 api_service_name = "youtube"
 api_version = "v3"
 youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = apikey)
