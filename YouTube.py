@@ -17,7 +17,7 @@ db = client["YouTube_00"]
 collection = db.youtube_data
 
 # Establishing Python-MySQL Connection
-mydb = pymysql.connect(host="127.0.0.1", user="root", password="Koushik@29",database="YouTube00")
+mydb = pymysql.connect(host="127.0.0.1", user="****", password="********",database="YouTube00")
 sql = mydb.cursor()
 
 # To Get YouTube Channel Details 
