@@ -7,9 +7,7 @@ import streamlit as st
 
 # Google API Connection
 apikey = "AIza****Il1_****-u3Fx****VKNt****FOKys"
-api_service_name = "youtube"
-api_version = "v3"
-youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = apikey)
+youtube = googleapiclient.discovery.build("youtube", "v3", developerKey = apikey)
 
 # Establishing Python-MongoDB Connection
 client = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -17,6 +15,7 @@ db = client["YouTube_00"]
 collection = db.youtube_data
 
 # Establishing Python-MySQL Connection
+# MySQL Database and tables were created already
 mydb = pymysql.connect(host="127.0.0.1", user="****", password="********",database="YouTube00")
 sql = mydb.cursor()
 
