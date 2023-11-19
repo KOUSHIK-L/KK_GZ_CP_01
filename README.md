@@ -17,11 +17,14 @@ This is my first programming project, and it has benefited greatly from input fr
 **Tools Used and Skills Gained:**
 1.Programming Language
     - Python 
+
 2. Data Base
     - MongoDB
     - MySQL
+
 3. Web Application
     - Streamlit
+
 4. Others
     - API integration 
     - Data Managment using MongoDB and MySQL
