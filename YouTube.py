@@ -18,7 +18,7 @@ textColor = "#31333F"
 
 
 # Google API Connection
-apikey = "AIzaSyCCIl1_Dlut-u3FxeMmVfVKNt9rvBFOKys"
+apikey = # Replace your API key Credintial as string
 api_service_name = "youtube"
 api_version = "v3"
 youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = apikey)
@@ -29,7 +29,7 @@ db = client["YouTube"]
 collection = db.youtube_data
 
 # Establishing Python-MySQL Connection
-mydb = pymysql.connect(host="127.0.0.1", user="root", password="Koushik@29")
+mydb = pymysql.connect(host="127.0.0.1", user="root", password= # enter your mysql workbench password as string)
 sql = mydb.cursor()
 sql.execute("CREATE DATABASE IF NOT EXISTS YouTube")
 sql.execute("USE YouTube")
