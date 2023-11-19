@@ -4,20 +4,40 @@ import pandas as pd
 import pymongo
 import pymysql
 import streamlit as st
+from streamlit_option_menu import option_menu
+
+
+# [theme]
+st.set_page_config(page_title='YouTube Data', layout="wide")
+base = "light"
+primaryColor = "#CD201F"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+font = "serif"
+textColor = "#31333F"
+
 
 # Google API Connection
-apikey = "AIza****Il1_****-u3Fx****VKNt****FOKys"
-youtube = googleapiclient.discovery.build("youtube", "v3", developerKey = apikey)
+apikey = "AIzaSyCCIl1_Dlut-u3FxeMmVfVKNt9rvBFOKys"
+api_service_name = "youtube"
+api_version = "v3"
+youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = apikey)
 
 # Establishing Python-MongoDB Connection
 client = pymongo.MongoClient("mongodb://localhost:27017/")
-db = client["YouTube_00"]
+db = client["YouTube"]
 collection = db.youtube_data
 
 # Establishing Python-MySQL Connection
-# MySQL Database and tables were created already
-mydb = pymysql.connect(host="127.0.0.1", user="****", password="********",database="YouTube00")
+mydb = pymysql.connect(host="127.0.0.1", user="root", password="Koushik@29")
 sql = mydb.cursor()
+sql.execute("CREATE DATABASE IF NOT EXISTS YouTube")
+sql.execute("USE YouTube")
+sql.execute("CREATE TABLE IF NOT EXISTS Channel_Details(channel_name VARCHAR(50), channel_id VARCHAR(50), channel_views INT, channel_video_count INT, overall_playlists_id VARCHAR(50))")
+sql.execute("CREATE TABLE IF NOT EXISTS Playlist_Details(playlist_id VARCHAR(100), channel_id VARCHAR(50), playlist_name VARCHAR(100))")
+sql.execute("CREATE TABLE IF NOT EXISTS Video_Details(video_id VARCHAR(50), channel_id VARCHAR(50), video_name VARCHAR(100),published_date DATETIME, views_count INT, like_count INT, dislike_count INT, comments_count INT, duration INT )")
+sql.execute("CREATE TABLE IF NOT EXISTS Comment_Details(video_id VARCHAR(20), comment_id VARCHAR(50), comment_date DATETIME)")
+
 
 # To Get YouTube Channel Details 
 def channel_details(channel_id):
@@ -133,7 +153,7 @@ def youtube_data (channel_id):
 # Data harvest to streamlit
 def data_harvest():
     c_id = st.text_input('Enter the Channel id')        
-    if c_id and st.sidebar.button("Scrap"):
+    if c_id and st.button("Scrap"):
         if len(c_id)==24:
             info1 = collection.find_one({"Channel Details.channel_id":c_id}) 
             if not info1:
@@ -143,13 +163,13 @@ def data_harvest():
                     document = [y]
                     d = collection.insert_many(document)
                     if d:
-                        st.sidebar.success("Done !")
+                        st.success("**Data Harvested !**")
                 except:
                     pass
             else:
-                st.sidebar.warning("Channel Information already exist !")
+                st.warning("**Channel Information already exist !**")
         else:
-            st.sidebar.error("Invalid Channel Id !") 
+            st.error("**Invalid Channel Id !**") 
 
 #  Data warehouse to Streamlit
 def data_warehouse():
@@ -158,8 +178,8 @@ def data_warehouse():
     for i in doc:
         cname = i["Channel Details"][0]["channel_name"]
         cnames.append(cname)
-    select = st.sidebar.selectbox("Select a Channel name", cnames)
-    if select and st.sidebar.button("Migrate"):
+    select = st.selectbox("Select a Channel name", cnames)
+    if select and st.button("Migrate"):
         y=[]
         for i in collection.find({"Channel Details.channel_name":select}):
             y.append(i)
@@ -171,6 +191,32 @@ def data_warehouse():
         v["duration"]=v["duration"].dt.seconds
         cm=pd.DataFrame(y[0]["Comment Details"])
         cm['comment_date'] = pd.to_datetime(cm["comment_date"], format='%Y-%m-%dT%H:%M:%SZ')
+
+        info2 = pd.read_sql_query("SELECT channel_name FROM Channel_Details",mydb)
+        if select not in info2["channel_name"].values:
+            insert1 = "INSERT INTO Channel_Details (channel_name, channel_id, channel_views, channel_video_count, overall_playlists_id) VALUES (%s,%s,%s,%s,%s)"
+            for i in range(len(c)):
+                sql.execute(insert1,tuple(c.iloc[i]))
+                mydb.commit()
+
+            insert2 = "INSERT INTO Playlist_Details(playlist_id, channel_id, playlist_name) VALUES (%s,%s,%s)"
+            for i in range(len(p)):
+                sql.execute(insert2,tuple(p.iloc[i]))
+                mydb.commit()        
+            
+            insert3 = "INSERT INTO Video_Details(video_id, channel_id, video_name,published_date,views_count,like_count,dislike_count,comments_count,duration) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            for i in range(len(v)):
+                sql.execute(insert3,tuple(v.iloc[i]))
+                mydb.commit()        
+            
+            insert4 = "INSERT INTO Comment_Details(video_id, comment_id, comment_date) VALUES (%s,%s,%s)"
+            for i in range(len(cm)):
+                sql.execute(insert4,tuple(cm.iloc[i]))
+                mydb.commit()
+        else:
+            st.warning("**Channel Information already exist in Database !**")      
+       
+        #  channel details in table format to be displayed in streamlit 
         st.subheader("Channel Details")
         st.dataframe(c)
         st.subheader("Playlist Details")
@@ -178,28 +224,8 @@ def data_warehouse():
         st.subheader("Video Details")
         st.dataframe(v)
         st.subheader("Comment Details")
-        st.dataframe(cm)        
-        info2 = pd.read_sql_query("SELECT channel_name FROM Channel_Details",mydb)
-        if select not in info2["channel_name"].values:
-            insert1 = "INSERT INTO Channel_Details (channel_name, channel_id, channel_views, channel_video_count, overall_playlists_id) VALUES (%s,%s,%s,%s,%s)"
-            for i in range(len(c)):
-                sql.execute(insert1,tuple(c.iloc[i]))
-            mydb.commit()
-            insert2 = "INSERT INTO Playlist_Details(playlist_id, channel_id, playlist_name) VALUES (%s,%s,%s)"
-            for i in range(len(p)):
-                sql.execute(insert2,tuple(p.iloc[i]))
-            mydb.commit()        
-            insert3 = "INSERT INTO Video_Details(video_id, channel_id, video_name,published_date,views_count,like_count,dislike_count,comments_count,duration) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            for i in range(len(v)):
-                sql.execute(insert3,tuple(v.iloc[i]))
-            mydb.commit()        
-            insert4 = "INSERT INTO Comment_Details(video_id, comment_id, comment_date) VALUES (%s,%s,%s)"
-            for i in range(len(cm)):
-                sql.execute(insert4,tuple(cm.iloc[i]))
-            mydb.commit()
-        else:
-            st.sidebar.warning("Channel Information already migrated to Database !")      
- 
+        st.dataframe(cm)   
+
 # Data Quering through streamlit
 def data_query():
     query_q = [ " ", "What are the names of all the videos and their corresponding channels?",
@@ -256,19 +282,48 @@ def data_query():
         query_a = pd.read_sql_query("SELECT c.channel_name, v.video_name, v.comments_count FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id ORDER BY v.comments_count DESC", mydb)
         st.dataframe(query_a)
 
-# Projest Titile
-st.sidebar.header("YouTube Data Harvesting and Warehousing using SQL MongoDB and Streamlit", divider="gray")
+
+# Streamlit page Titile
+st.markdown(f'<h1 style="text-align:center;color:#CD201F">YouTube Data Harvesting and Warehousing using SQL MongoDB and Streamlit</h1>', unsafe_allow_html=True)    
 
 # Stages of Project
-option = st.sidebar.selectbox('Three Stages of Project ', ('Data Scrap', 'Data Migrate', 'Data Query'))
-
+option = option_menu(None, options=['Data Scrap', 'Data Migrate', 'Data Query'],orientation='horizontal')
 # Condition for Scrap, Migrate, Query 
-if option=="Data Scrap":   
-    st.title("YouTube Data Harvesting")                    
-    data_harvest()  
+if option=="Data Scrap":  
+    st.header("YouTube Data Scaping and Harvesting")
+    st.subheader(":violet[**In Data Scrap and Harvest:**]")
+    st.write("The YouTube API connection will be successfully established.") 
+    st.write("The Google API client library in Python will be utilized to make requests and retrieve channel details.") 
+    st.write("The collected information will then be stored in MongoDB to effectively manage unstructured data.") 
+    st.write("Upon successful storage in MongoDB, a success notification will be generated.")
+    st.subheader(":violet[**Note:**]")
+    st.write("The scrapped data will be displayed as JSON which has to be harvested into MongoDB.")
+    st.write("If correct channel ID is not provided an error will be raised.") 
+    st.write("For providing channel ID of previously stored data, a warning will be issued.")                    
+    st.write("")
+    st.write("")    
+    data_harvest() 
+    
+
 elif option=="Data Migrate":
-    st.title("YouTube Data Ware Housing")
-    data_warehouse()
+    st.header("YouTube Data Migration and Ware Housing")
+    st.subheader(":violet[In Data Migrate and Ware House:]")
+    st.write("The stored Channel details in MongoDB data lake are carefully selected based on their respective channel name.") 
+    st.write("Then selected channel details are migrated to a MySQL database, thus transforming the data into a structured format.") 
+    st.write("The migrated information is now will get successfully warehoused in MySQL for getting insights.")
+    st.subheader(":violet[Note:]")
+    st.write("The structured datas of selected channel details will be displayed in streamlit.")
+    st.write("If the channel details of the selected channel were previously migrated to the MySQL database, a warning will be issued.")                    
+    st.write("")
+    st.write("")
+    data_warehouse() 
+
 elif option=="Data Query":
-    st.title("YouTube Data SQL Quries")
+    st.header("YouTube Data SQL Quries")
+    st.subheader(":violet[In Data Query:]")
+    st.write("The warehoused channel details in MySQL are used for gaining insights through various SQL queries.") 
+    st.write("The structured data is retrieved from MySQL, in response to selected SQL query.") 
+    st.write("The results of these query are dynamically displayed through a Streamlit application for user convenience.")
+    st.write("")
+    st.write("")
     data_query()
