@@ -14,21 +14,19 @@ YouTube is one of the most frequently used online media platforms, and the numbe
 **Personal Opinion:**
 This is my first programming project, and it has benefited greatly from input from many people, including myself. Through this project, I have learned more about Python, MongoDB, MySQL, and especially, the Streamlit web application.
 
-**Tools Used and Skills Gained:**
+### Tools Used and Skills Gained
 
-1.Programming Language
-    
-    - Python 
+#### 1. Programming Language
+   - Python 
 
-2. Data Base
-    - MongoDB
-    - MySQL
+#### 2. Database
+   - MongoDB
+   - MySQL
 
-3. Web Application
-    - Streamlit
+#### 3. Web Application
+   - Streamlit
 
-4. Others
-    - API integration 
-    - Data Managment using MongoDB and MySQL
-
+#### 4. Others
+   - API Integration 
+   - Data Management using MongoDB and MySQL
 
