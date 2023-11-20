@@ -208,14 +208,14 @@ def data_warehouse():
             st.warning("**Channel Information already exist in Database !**")      
        
         #  channel details in table format to display in streamlit 
-        st.subheader("Channel Details")
-        st.dataframe(c)
-        st.subheader("Playlist Details")
-        st.dataframe(p)
-        st.subheader("Video Details")
-        st.dataframe(v)
-        st.subheader("Comment Details")
-        st.dataframe(cm)   
+        st.subheader(":violet[Channel Details]")
+        st.table(c)
+        st.subheader(":violet[Playlist Details]")
+        st.table(p)
+        st.subheader(":violet[Video Details]")
+        st.table(v)
+        st.subheader(":violet[Comment Details]")
+        st.table(cm)   
 
 # Data Quering through streamlit
 def data_query():
