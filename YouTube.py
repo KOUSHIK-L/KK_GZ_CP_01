@@ -7,18 +7,8 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 
 
-# [theme]
-st.set_page_config(page_title='YouTube Data', layout="wide")
-base = "light"
-primaryColor = "#CD201F"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F0F2F6"
-font = "serif"
-textColor = "#31333F"
-
-
 # Google API Connection
-apikey = # Replace your API key Credintial as string
+apikey = "AIzaSyCCIl1_Dlut-u3FxeMmVfVKNt9rvBFOKys"
 api_service_name = "youtube"
 api_version = "v3"
 youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = apikey)
@@ -29,8 +19,9 @@ db = client["YouTube"]
 collection = db.youtube_data
 
 # Establishing Python-MySQL Connection
-mydb = pymysql.connect(host="127.0.0.1", user="root", password= # enter your mysql workbench password as string)
+mydb = pymysql.connect(host="127.0.0.1", user="root", password="Koushik@29")
 sql = mydb.cursor()
+# MySQL Database and Table creation and data inserion 
 sql.execute("CREATE DATABASE IF NOT EXISTS YouTube")
 sql.execute("USE YouTube")
 sql.execute("CREATE TABLE IF NOT EXISTS Channel_Details(channel_name VARCHAR(50), channel_id VARCHAR(50), channel_views INT, channel_video_count INT, overall_playlists_id VARCHAR(50))")
@@ -150,7 +141,7 @@ def youtube_data (channel_id):
          "Comment Details":comments}    
     return all_details
 
-# Data harvest to streamlit
+# Data harvest and dispaly into streamlit
 def data_harvest():
     c_id = st.text_input('Enter the Channel id')        
     if c_id and st.button("Scrap"):
@@ -171,7 +162,7 @@ def data_harvest():
         else:
             st.error("**Invalid Channel Id !**") 
 
-#  Data warehouse to Streamlit
+#  Data warehouse through Streamlit
 def data_warehouse():
     cnames=[]
     doc = collection.find({}, {"Channel Details.channel_name": 1, "_id": 0})
@@ -216,7 +207,7 @@ def data_warehouse():
         else:
             st.warning("**Channel Information already exist in Database !**")      
        
-        #  channel details in table format to be displayed in streamlit 
+        #  channel details in table format to display in streamlit 
         st.subheader("Channel Details")
         st.dataframe(c)
         st.subheader("Playlist Details")
@@ -243,77 +234,79 @@ def data_query():
         pass
     elif query == "What are the names of all the videos and their corresponding channels?" and st.button("Query"):
         st.subheader("Names of all videos and their respective channel name")
-        query_a = pd.read_sql_query("SELECT v.video_name,c.channel_name FROM Video_Details AS v JOIN Channel_Details AS c ON c.channel_id=v.channel_id", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT v.video_name AS 'Video Names',c.channel_name AS 'Channel Names' FROM Video_Details AS v JOIN Channel_Details AS c ON c.channel_id=v.channel_id", mydb)
+        st.table(query_a)
     elif query == "Which channels have the most number of videos, and how many videos do they have?" and st.button("Query"):
         st.subheader("Channel with most number of videos and its count")
-        query_a = pd.read_sql_query("SELECT channel_name, channel_video_count FROM Channel_Details ORDER BY channel_video_count DESC", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT channel_name AS 'Channel Names', channel_video_count AS 'Channel Video Counts' FROM Channel_Details ORDER BY channel_video_count DESC", mydb)
+        st.table(query_a)
     elif query == "What are the top 10 most viewed videos and their respective channels?" and st.button("Query"):
         st.subheader("Top 10 most viewed video and its respective channel name")
-        query_a = pd.read_sql_query("SELECT v.video_name, v.views_count, c.channel_name FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id ORDER BY v.views_count DESC LIMIT 10", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT v.video_name AS 'Video Names', v.views_count AS 'View Counts', c.channel_name AS 'Channel Names' FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id ORDER BY v.views_count DESC LIMIT 10", mydb)
+        st.table(query_a)
     elif query == "How many comments were made on each video, and what are their corresponding video names?" and st.button("Query"):
         st.subheader("Number of comments on each video and their respective names")
-        query_a = pd.read_sql_query("SELECT video_name, comments_count FROM Video_Details", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT video_name AS 'Video Names', comments_count AS 'Comment Counts' FROM Video_Details", mydb)
+        st.table(query_a)
     elif query == "Which videos have the highest number of likes, and what are their corresponding channel names?" and st.button("Query"):
         st.subheader("Videos with highest number of likes and its corresponding channel name")
-        query_a = pd.read_sql_query("SELECT c.channel_name, v.video_name, v.like_count FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id ORDER BY v.like_count DESC" , mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT c.channel_name AS 'Channel Names', v.video_name AS 'Video Names', v.like_count AS 'Like Counts' FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id ORDER BY v.like_count DESC" , mydb)
+        st.table(query_a)
     elif query == "What is the total number of likes and dislikes for each video, and what are their corresponding video names?" and st.button("Query"):
         st.subheader("Total number of likes and dislikes of each video and their respective names")
-        query_a = pd.read_sql_query("SELECT video_name, like_count, dislike_count FROM Video_Details", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT video_name AS 'Video Names', like_count AS 'Like Counts', dislike_count AS 'Dislike Counts' FROM Video_Details", mydb)
+        st.table(query_a)
     elif query == "What is the total number of views for each channel, and what are their corresponding channel names?" and st.button("Query"):
         st.subheader("Total number of views of channel and their respective names")
-        query_a = pd.read_sql_query("SELECT channel_name, channel_views FROM Channel_Details ORDER BY channel_views DESC", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT channel_name AS 'Channel Names' , channel_views AS 'Channel Views' FROM Channel_Details ORDER BY channel_views DESC", mydb)
+        st.table(query_a)
     elif query == "What are the names of all the channels that have published videos in the year 2022?" and st.button("Query"):
         st.subheader("Names of all channels that have published videos in year 2022")
-        query_a = pd.read_sql_query("SELECT DISTINCT c.channel_name FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id WHERE YEAR(published_date)=2022", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT DISTINCT c.channel_name AS 'Channel Names' FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id WHERE YEAR(published_date)=2022", mydb)
+        st.table(query_a)
     elif query == "What is the average duration of all videos in each channel, and what are their corresponding channel names?" and st.button("Query"):
         st.subheader("Average duration of all videos in a channel and their respective channel names")
-        query_a = pd.read_sql_query("SELECT c.channel_name, AVG(v.duration) FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id GROUP BY c.channel_name ORDER BY AVG(v.duration) DESC", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT c.channel_name AS 'Channel Names', AVG(v.duration) AS 'Average Video Duration' FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id GROUP BY c.channel_name ORDER BY AVG(v.duration) DESC", mydb)
+        st.table(query_a)
     elif query == "Which videos have the highest number of comments, and what are their corresponding channel names?" and st.button("Query"):
         st.subheader("Videos with highest number of Comments and their Channel names")
-        query_a = pd.read_sql_query("SELECT c.channel_name, v.video_name, v.comments_count FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id ORDER BY v.comments_count DESC", mydb)
-        st.dataframe(query_a)
+        query_a = pd.read_sql_query("SELECT c.channel_name AS 'Channel Names', v.video_name AS 'Video Names', v.comments_count AS 'Comment Counts' FROM Channel_Details c JOIN Video_Details v ON c.channel_id=v.channel_id ORDER BY v.comments_count DESC", mydb)
+        st.table(query_a)
 
 
+# Streamlit page configuration
+st.set_page_config(page_title='YouTube Data', layout="wide")
 # Streamlit page Titile
 st.markdown(f'<h1 style="text-align:center;color:#CD201F">YouTube Data Harvesting and Warehousing using SQL MongoDB and Streamlit</h1>', unsafe_allow_html=True)    
 
 # Stages of Project
 option = option_menu(None, options=['Data Scrap', 'Data Migrate', 'Data Query'],orientation='horizontal')
+
 # Condition for Scrap, Migrate, Query 
 if option=="Data Scrap":  
     st.header("YouTube Data Scaping and Harvesting")
     st.subheader(":violet[**In Data Scrap and Harvest:**]")
-    st.write("The YouTube API connection will be successfully established.") 
-    st.write("The Google API client library in Python will be utilized to make requests and retrieve channel details.") 
-    st.write("The collected information will then be stored in MongoDB to effectively manage unstructured data.") 
-    st.write("Upon successful storage in MongoDB, a success notification will be generated.")
+    st.markdown(" - The YouTube API connection will be successfully established.") 
+    st.markdown(" - The Google API client library in Python will be utilized to make requests and retrieve channel details.") 
+    st.markdown(" - The collected information will then be stored in MongoDB to effectively manage unstructured data.") 
+    st.markdown(" - Upon successful storage in MongoDB, a success notification will be generated.")
     st.subheader(":violet[**Note:**]")
-    st.write("The scrapped data will be displayed as JSON which has to be harvested into MongoDB.")
-    st.write("If correct channel ID is not provided an error will be raised.") 
-    st.write("For providing channel ID of previously stored data, a warning will be issued.")                    
+    st.markdown(" - The scrapped data will be displayed as JSON which has to be harvested into MongoDB.")
+    st.markdown(" - If correct channel ID is not provided an error will be raised.") 
+    st.markdown(" - For providing channel ID of previously stored data, a warning will be issued.")                    
     st.write("")
     st.write("")    
     data_harvest() 
     
-
 elif option=="Data Migrate":
     st.header("YouTube Data Migration and Ware Housing")
     st.subheader(":violet[In Data Migrate and Ware House:]")
-    st.write("The stored Channel details in MongoDB data lake are carefully selected based on their respective channel name.") 
-    st.write("Then selected channel details are migrated to a MySQL database, thus transforming the data into a structured format.") 
-    st.write("The migrated information is now will get successfully warehoused in MySQL for getting insights.")
+    st.markdown(" - The stored Channel details in MongoDB data lake are carefully selected based on their respective channel name.") 
+    st.markdown(" - Then selected channel details are migrated to a MySQL database, thus transforming the data into a structured format.") 
+    st.markdown(" - The migrated information is now will get successfully warehoused in MySQL for getting insights.")
     st.subheader(":violet[Note:]")
-    st.write("The structured datas of selected channel details will be displayed in streamlit.")
-    st.write("If the channel details of the selected channel were previously migrated to the MySQL database, a warning will be issued.")                    
+    st.markdown(" - The structured datas of selected channel details will be displayed in streamlit.")
+    st.markdown(" - If the channel details of the selected channel were previously migrated to the MySQL database, a warning will be issued.")                    
     st.write("")
     st.write("")
     data_warehouse() 
@@ -321,9 +314,9 @@ elif option=="Data Migrate":
 elif option=="Data Query":
     st.header("YouTube Data SQL Quries")
     st.subheader(":violet[In Data Query:]")
-    st.write("The warehoused channel details in MySQL are used for gaining insights through various SQL queries.") 
-    st.write("The structured data is retrieved from MySQL, in response to selected SQL query.") 
-    st.write("The results of these query are dynamically displayed through a Streamlit application for user convenience.")
+    st.markdown(" - The warehoused channel details in MySQL are used for gaining insights through various SQL queries.") 
+    st.markdown(" - The structured data is retrieved from MySQL, in response to selected SQL query.") 
+    st.markdown(" - The results of these query are dynamically displayed through a Streamlit application for user convenience.")
     st.write("")
     st.write("")
     data_query()
