@@ -19,7 +19,7 @@ db = client["YouTube"]
 collection = db.youtube_data
 
 # Establishing Python-MySQL Connection
-mydb = pymysql.connect(host="127.0.0.1", user="root", password="Koushik@29")
+mydb = pymysql.connect(host="127.0.0.1", user=enter_username, password=enter_password)
 sql = mydb.cursor()
 # MySQL Database and Table creation and data inserion 
 sql.execute("CREATE DATABASE IF NOT EXISTS YouTube")
