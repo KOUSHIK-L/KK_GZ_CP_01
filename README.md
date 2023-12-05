@@ -1,7 +1,5 @@
 # YouTube Data Harvesting and Warehousing using MongoDB, MySQL and Streamlit
 
-***Guvi-Zen-Capstone Project-01***
-
 **Problem Statement:**
 The problem statement is to create a Streamlit application that allows users to access and analyze data from multiple YouTube channels.
 
